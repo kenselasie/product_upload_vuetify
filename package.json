@@ -39,7 +39,17 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {}
+    "rules": {
+      "no-console": "off",
+      "no-unused-vars": "off",
+      "no-useless-escape": "off",
+      "no-mixed-spaces-and-tabs": "off",
+      "no-irregular-whitespace": "off",
+      "no-inner-declarations": "off",
+      "no-undef": "off",
+      "no-unsafe-negation": "off",
+      "no-extra-semi": "off"
+    }
   },
   "browserslist": [
     "> 1%",

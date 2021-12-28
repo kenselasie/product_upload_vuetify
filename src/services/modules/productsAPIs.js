@@ -32,6 +32,7 @@ export const getAllProductsService = async (page=null) => {
     }
 }
 
+
 export const deleteAllProductsService = async () => {
     try {
         const { data } = await axios.delete(`/workflow/product`)
@@ -43,13 +44,21 @@ export const deleteAllProductsService = async () => {
 
 export const searchProductsService = async (keyword) => {
     try {
-        const { data } = await axios.get(`workflow/product/value/filter?search=${keyword}`)
+        const { data } = await axios.get(`workflow/product/values/filter?search=${keyword}`)
         return await Promise.resolve(data)
     } catch (err) {
         return await Promise.reject(err)
     }
 }
 
+export const toggleActiveProductsService = async (keyword) => {
+    try {
+        const { data } = await axios.get(`workflow/product/status/filter?active=${keyword}`)
+        return await Promise.resolve(data)
+    } catch (err) {
+        return await Promise.reject(err)
+    }
+}
 
 
 export const updateProductService = async (uuid, payload) => {
