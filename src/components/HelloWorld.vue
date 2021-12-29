@@ -421,13 +421,13 @@ import { getAllProductsService, toggleActiveProductsService, addSingleProductSer
 
       async save () {
         if (this.editedIndex > -1) {
-          console.log(this.editedItem)
-          const { active, description, name, sku } = this.editedItem
+          // console.log(this.editedItem)
+          // const { active, description, name, sku } = this.editedItem
 
-          if (!active) return alert('Active field is required')
-          if (!description) return alert('Description field is required')
-          if (!name) return alert('name field is required')
-          if (!sku) return alert('sku field is required')
+          // if (!active) return alert('Active field is required')
+          // if (!description) return alert('Description field is required')
+          // if (!name) return alert('name field is required')
+          // if (!sku) return alert('sku field is required')
           try {
             const update = await updateProductService(this.editedItem.uuid, {
               active: this.editedItem.active,
