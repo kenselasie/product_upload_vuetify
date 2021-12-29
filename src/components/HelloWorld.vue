@@ -2,16 +2,43 @@
   <v-container>
   <v-row class="my-10">
     <v-file-input show-size truncate-length="15" style="width: 30px" v-model="csv_document" placeholder="Bulk upload"></v-file-input>
-
+  
     <v-col cols="6">
       <v-btn @click="bulkUpload">Upload</v-btn>
     </v-col>
-    <div v-if="isUploading">
-    <progress  max="100" :value="uploadPercentage">Progress</progress> 
-    <h3>{{uploadPercentage + '%'}}</h3>
-  </div>
+    
   </v-row>
   
+  <!-- <div v-if="isUploading">
+    <progress  max="100" :value="uploadPercentage">Progress</progress> 
+    <h3>{{uploadPercentage + '%'}}</h3>
+  </div> -->
+
+  <div v-if="isUploading">
+    <b class="mr-5">Uploading to server</b>
+    <v-progress-circular
+        :rotate="360"
+        :size="90"
+        :width="15"
+        :value="uploadPercentage"
+        color="teal"
+      >
+        {{ uploadPercentage }}
+      </v-progress-circular>
+  </div>
+
+  <div v-if="writingProgress && writingProgress != 100">
+    <b class="mr-5">Saving to database</b>
+    <v-progress-circular
+        :rotate="360"
+        :size="90"
+        :width="15"
+        :value="writingProgress"
+        color="teal"
+      >
+        {{ writingProgress }}
+      </v-progress-circular>
+  </div>
   <!-- <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details ></v-text-field> -->
   <v-text-field v-model="searchBackend" append-icon="mdi-magnify" label="Search Products" single-line hide-details ></v-text-field>
 
@@ -145,20 +172,24 @@
       </v-icon>
     </template>
   </v-data-table>
-    <v-pagination v-if="totalPages" v-model="page" :total-visible="7" :next="nextPage" :length="totalPages" ></v-pagination>
+    <v-pagination v-if="totalPages" v-model="page" :total-visible="7" :length="totalPages" ></v-pagination>
   </v-container>
 </template>
 
 <script>
-import moment from 'moment';
+import moment from 'moment'
+import Pusher from 'pusher-js'
 import { axios } from '../services/axios'
-import socketMixins from '../mixins/sockets'
+// import socketMixins from '../mixins/sockets'
 import { getAllProductsService, toggleActiveProductsService, addSingleProductService, searchProductsService, deleteAllProductsService, deleteProductService, updateProductService } from '../services'
   export default {
-    mixins: [socketMixins],
+    // mixins: [socketMixins],
     data: () => ({
       totalPages: 0,
       uploadPercentage: 10,
+      channel_name: 'my-channel',
+      password: 'my-event',
+      writingProgress: 0,
       isUploading: false,
       page: 1,
       next: null,
@@ -269,11 +300,13 @@ import { getAllProductsService, toggleActiveProductsService, addSingleProductSer
         })
         this.isLoading = false
       },
-
     },
 
     created () {
       this.getProducts()
+    },
+    mounted() {
+      this.subscribe(this.channel_name, this.password)
     },
 
     methods: {
@@ -362,17 +395,24 @@ import { getAllProductsService, toggleActiveProductsService, addSingleProductSer
           this.editedIndex = -1
         })
       },
-
+      subscribe (channel_name, password) {
+          let pusher = new Pusher("fa9439448253b3443965", {
+            cluster: "eu", // gotten from Pusher app dashboard
+            encrypted: true // optional
+          })
+          pusher.subscribe(channel_name)
+          pusher.bind(password, data => {
+            console.log(data)
+            this.writingProgress = parseInt(data.message)
+            console.log(this.writingProgress)
+          })
+      },
       closeDelete () {
         this.dialogDelete = false
         this.$nextTick(() => {
           this.editedItem = Object.assign({}, this.defaultItem)
           this.editedIndex = -1
         })
-      },
-
-      async nextPage() {
-        console.log('next')
       },
 
       async save () {
