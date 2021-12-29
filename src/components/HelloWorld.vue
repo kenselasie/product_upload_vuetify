@@ -1,6 +1,10 @@
 <template>
   <v-container>
-  <v-row class="my-10">
+   
+    <v-row class="mt-5" v-if="totalProducts">
+      <h3>Total Products: {{ totalProducts }}</h3>
+    </v-row>
+  <v-row class="my-6">
     <v-file-input show-size truncate-length="15" style="width: 30px" v-model="csv_document" placeholder="Bulk upload"></v-file-input>
   
     <v-col cols="6">
