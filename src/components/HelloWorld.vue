@@ -27,7 +27,7 @@
       </v-progress-circular>
   </div>
 
-  <div v-if="writingProgress && writingProgress != 100">
+  <div v-if="writingProgress && writingProgress <= 95">
     <b class="mr-5">Saving to database</b>
     <v-progress-circular
         :rotate="360"
