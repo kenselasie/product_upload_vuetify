@@ -4,12 +4,10 @@
     <v-row class="mt-5" v-if="totalProducts">
       <h3>Total Products: {{ totalProducts }}</h3>
     </v-row>
-  <v-row class="my-6">
-    <v-file-input show-size truncate-length="15" style="width: 30px" v-model="csv_document" placeholder="Bulk upload"></v-file-input>
   
-    <v-col cols="6">
-      <v-btn @click="bulkUpload">Upload</v-btn>
-    </v-col>
+  <v-row class="my-6">
+    <v-file-input show-size truncate-length="15" class="mb-5" outlined dense style="max-width: 500px" v-model="csv_document" placeholder="Bulk upload"></v-file-input>
+      <v-btn @click="bulkUpload" :disabled="csv_document ? false : true" class="ml-5">Upload</v-btn>
     
   </v-row>
   
@@ -18,7 +16,7 @@
     <h3>{{uploadPercentage + '%'}}</h3>
   </div> -->
 
-  <div v-if="isUploading">
+  <div v-if="isUploading" class="mb-7">
     <b class="mr-5">Uploading to server</b>
     <v-progress-circular
         :rotate="360"
@@ -30,8 +28,8 @@
         {{ uploadPercentage }}
       </v-progress-circular>
   </div>
-
-  <div v-if="writingProgress && writingProgress <= 95">
+  <div v-if="uploadPercentage == '100'" >Preparing to upload ...</div>
+  <div class="mb-7" v-if="writingProgress && writingProgress <= 95">
     <b class="mr-5">Saving to database</b>
     <v-progress-circular
         :rotate="360"
@@ -44,7 +42,7 @@
       </v-progress-circular>
   </div>
   <!-- <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details ></v-text-field> -->
-  <v-text-field v-model="searchBackend" append-icon="mdi-magnify" label="Search Products" single-line hide-details ></v-text-field>
+  <v-text-field v-model="searchBackend" append-icon="mdi-magnify" outlined dense label="Search Products" single-line hide-details ></v-text-field>
 
     <v-data-table :headers="headers" :items="products" class="elevation-1 mt-10" :loading="isLoading" :items-per-page="15" :search="search" loading-text="Loading... Please wait">
     <template v-slot:top>
@@ -52,25 +50,30 @@
         <!-- <v-toolbar-title>Total Entire Products ({{totalProducts || 'loading...'}})</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider> -->
         
-        <v-row class="my-5">
-          <v-btn dark @click="bulkDelete">Bulk delete</v-btn>
-        </v-row>
+        
 
+       
         <v-row>
            <v-select
           :items="activeFields"
-          label="Toggle Status"
+          label="ACTIVE STATUS"
           v-model="statusToFilter"
+          outlined
+          dense
+          style="max-width: 200px; max-height: 40px"
           solo
         ></v-select>
         </v-row>
 
        <v-spacer></v-spacer>
+       <!-- <v-row class="my-5"> -->
+          <v-btn dark color="error" @click="bulkDelete">Bulk delete</v-btn>
+        <!-- </v-row> -->
         
         
         <v-dialog v-model="dialog" max-width="500px">
          <template v-slot:activator="{ on, attrs }">
-           <v-btn color="dark" dark class="mb-2" v-bind="attrs" v-on="on">
+           <v-btn color="success" dark class="ml-3" v-bind="attrs" v-on="on">
             Add New Product
           </v-btn>
         
@@ -88,7 +91,9 @@
                   <v-col cols="12"  sm="6" md="4"  >
                     <v-text-field
                       v-model="editedItem.name"
-                      label="Product Name"
+                      label="Name"
+                      outlined
+                      dense
                     ></v-text-field>
                   </v-col>
                   <v-col
@@ -100,18 +105,23 @@
                       v-model="editedItem.sku"
                       label="sku"
                       val
+                      outlined
+                      dense
                     ></v-text-field>
                   </v-col>
                   <v-col
                     cols="12"
                     sm="6"
                     md="4"
+                    outlined
+                      dense
                   >
                     <v-select
                     :items="activeFieldsBoolean"
                      v-model="editedItem.active"
                       label="Active"
-                    solo
+                    outlined
+                      dense
                   ></v-select>
                   </v-col>
                   <v-col
@@ -122,6 +132,8 @@
                     <v-text-field
                       v-model="editedItem.description"
                       label="description"
+                      outlined
+                      dense
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -176,7 +188,7 @@
       </v-icon>
     </template>
   </v-data-table>
-    <v-pagination v-if="totalPages" v-model="page" :total-visible="7" :length="totalPages" ></v-pagination>
+    <v-pagination v-if="totalPages" v-model="page" :total-visible="1" :length="totalPages" ></v-pagination>
   </v-container>
 </template>
 
@@ -190,7 +202,7 @@ import { getAllProductsService, toggleActiveProductsService, addSingleProductSer
     // mixins: [socketMixins],
     data: () => ({
       totalPages: 0,
-      uploadPercentage: 10,
+      uploadPercentage: 0,
       channel_name: 'my-channel',
       password: 'my-event',
       writingProgress: 0,
@@ -209,7 +221,7 @@ import { getAllProductsService, toggleActiveProductsService, addSingleProductSer
       activeFields: ['Active', 'InActive', 'All'],
       activeFieldsBoolean: [true, false],
       headers: [
-        { text: 'Product Name', align: 'start', sortable: false, value: 'name' },
+        { text: 'Name', align: 'start', sortable: false, value: 'name' },
         { text: 'SKU', value: 'sku', sortable: false, },
         { text: 'Active', value: 'active', sortable: false, },
         { text: 'Description', value: 'description', sortable: false, },
@@ -341,8 +353,8 @@ import { getAllProductsService, toggleActiveProductsService, addSingleProductSer
       },
 
       async bulkUpload() {
-        this.isUploading = true
         if (!this.csv_document) return alert('Please upload a file')
+        this.isUploading = true
         let csvFormData = new FormData()
         csvFormData.append('file', this.csv_document)
 
@@ -408,6 +420,7 @@ import { getAllProductsService, toggleActiveProductsService, addSingleProductSer
           pusher.bind(password, data => {
             console.log(data)
             this.writingProgress = parseInt(data.message)
+            this.uploadPercentage = 0
             console.log(this.writingProgress)
           })
       },
